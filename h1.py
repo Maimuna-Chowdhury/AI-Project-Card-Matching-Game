@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Jun 15 21:13:13 2024
+
+@author: Hp
+"""
+
 # black jack in python wth pygame!
 import copy
 import random
@@ -316,15 +323,12 @@ def check_endgame(AI_S,hand_act, deal_score, play_score, result, totals, add,sc_
 #BlackJack2.0 starting
 
 class Mem:
-    player_turn=True
     logo_frame = None
     new_card = None
     first_card = None
-    click_player_count = 0
-    click_ai_count=0
+    click_count = 0
     found_matches = 0
-    total_player_tries = 0
-    total_ai_tries=0
+    total_tries = 0
     match_list = []
     blank_cards = []
     card_images = []
@@ -376,16 +380,13 @@ def level_up():
 
     messagebox.showinfo('Good try:', 'Well done, but to progress\nyou must complete this level\nin less clicks next time.\n\nClick OK to try again.')
 
-def we_have_a_winner(agent,clicks):
-    
-    updt_status_bar(str(agent)+' Completed puzzle in: ' + str(clicks) + ' clicks')
+def we_have_a_winner():
+    updt_status_bar('Completed puzzle in: ' + str(Mem.all_clicks) + ' clicks')
     Mem.new_card = None
     Mem.first_card = None
-    Mem.click_player_count = 0
-    Mem.click_ai_count=0
+    Mem.click_count = 0
     Mem.found_matches = 0
-    Mem.total_player_tries = 0
-    Mem.total_ai_tries=0
+    Mem.total_tries = 0
     Mem.match_list = []
     Mem.blank_cards = []
     Mem.card_images = []
@@ -395,7 +396,8 @@ def we_have_a_winner(agent,clicks):
 
     level_up()
 
-    
+    Mem.total_player_clicks = 0
+    Mem.total_AI_clicks = 0
     create_status_bar()
     create_game_board()
 
@@ -415,144 +417,53 @@ def get_png_list(loc):
     return [os.path.join(loc, f) for f in pngs]
 
 def check_match():
-    global Mem
-    
-    if Mem.player_turn:
-        # Player's turn logic
-        flipped_cards = [card for card in Mem.blank_cards if card.img is not None]
-        
-        if len(flipped_cards) == 2:
-            card1, card2 = flipped_cards
-            if card1.cget('text') == card2.cget('text'):
-                # Match found by player
-                Mem.match_list.append(card1.cget('text'))
-                Mem.found_matches += 1
-                Mem.total_player_tries += 1
-                Mem.click_player_count = 0
-                updt_status_bar('Clicks: ' + str(Mem.all_clicks) + ' - ' + str(Mem.target_clicks))
-                
-                # Continue playing
-                for item in Mem.blank_cards:
-                    if item.cget('text') not in Mem.match_list:
-                        item.bind('<Button-1>', on_click)
-                
-                # Check if all matches found
-                if Mem.found_matches == Mem.num_pairs:
-                    we_have_a_winner("Player", Mem.total_player_tries)
-                    updt_status_bar('Clicks: ' + str(Mem.all_clicks) + ' - ' + str(Mem.target_clicks))
-            else:
-                # No match found, continue playing
-                Mem.player_turn = False  # Switch to AI's turn
-                ai_turn()  # AI takes its turn
-    else:
-        # AI's turn logic
-        flipped_cards = [card for card in Mem.blank_cards if card.img is not None]
-        
-        if len(flipped_cards) == 2:
-            card1, card2 = flipped_cards
-            if card1.cget('text') == card2.cget('text'):
-                # Match found by AI
-                Mem.match_list.append(card1.cget('text'))
-                Mem.found_matches += 1
-                Mem.total_ai_tries += 1
-                Mem.click_ai_count = 0
-                updt_status_bar('Clicks: ' + str(Mem.all_clicks) + ' - ' + str(Mem.target_clicks))
-                
-                # Continue playing
-                for item in Mem.blank_cards:
-                    if item.cget('text') not in Mem.match_list:
-                        item.bind('<Button-1>', on_click)
-                
-                # Check if all matches found
-                if Mem.found_matches == Mem.num_pairs:
-                    we_have_a_winner("AI", Mem.total_ai_tries)
-                    updt_status_bar('Clicks: ' + str(Mem.all_clicks) + ' - ' + str(Mem.target_clicks))
-            else:
-                # No match found, continue playing
-                Mem.player_turn = True  # Switch to player's turn
+    Mem.total_tries += 1
+    Mem.new_card.img = Mem.card
+    Mem.new_card.config(image=Mem.new_card.img)
+    Mem.first_card.img = Mem.card
+    Mem.first_card.config(image=Mem.first_card.img)
 
-                # Allow player to continue playing
-                for item in Mem.blank_cards:
-                    if item.cget('text') not in Mem.match_list:
-                        item.bind('<Button-1>', on_click)
+    for item in Mem.blank_cards:
+        if item.cget('text') not in Mem.match_list:
+            item.bind('<Button-1>', on_click)
 
-
-        
-        
-  
+    Mem.click_count = 0
+    ai_turn()
 
 def on_click(event):
-    if Mem.player_turn==True:
-        
-        
-        Mem.total_player_tries+=1
-        Mem.click_player_count+=1
-        Mem.all_clicks+=1
-
-        Mem.new_card = event.widget
-        img = tk.PhotoImage(file=Mem.new_card.cget('text'))
-        Mem.new_card.img = img
-        Mem.new_card.config(image=img)
-
-        if Mem.click_player_count == 1:
-            Mem.first_card = Mem.new_card
-            Mem.first_card.unbind('<Button-1>')
-            updt_status_bar('Clicks:' + str(Mem.all_clicks) + '-' + str(Mem.target_clicks))
-        else:
-            for item in Mem.blank_cards:
-                item.unbind('<Button-1>')
-            if Mem.new_card.cget('text') == Mem.first_card.cget('text'):
-                Mem.match_list.append(Mem.new_card.cget('text'))
-                Mem.found_matches += 1
-                Mem.total_player_tries += 1
-                Mem.click_player_count = 0
-                for item in Mem.blank_cards:
-                    if item.cget('text') not in Mem.match_list:
-                        updt_status_bar('Clicks:' + str(Mem.all_clicks) + '-' + str(Mem.target_clicks))
-                        item.bind('<Button-1>', on_click)
-                if Mem.found_matches == Mem.num_pairs:
-                    we_have_a_winner("Player",Mem.total_player_tries)
-                    updt_status_bar('Clicks:' + str(Mem.all_clicks) + '-' + str(Mem.target_clicks))
-            else:
-                ai_remember_card(Mem.first_card)
-                ai_remember_card(Mem.new_card)
-                Mem.new_card.after(1000, check_match)
-    else:
-        Mem.total_ai_tries+=1
-        Mem.click_ai_count+=1
-        Mem.all_clicks+=1
-
-        Mem.new_card = event.widget
-        img = tk.PhotoImage(file=Mem.new_card.cget('text'))
-        Mem.new_card.img = img
-        Mem.new_card.config(image=img)
-
-        if Mem.click_ai_count == 1:
-            Mem.first_card = Mem.new_card
-            Mem.first_card.unbind('<Button-1>')
-            updt_status_bar('Clicks:' + str(Mem.all_clicks) + '-' + str(Mem.target_clicks))
-        else:
-            for item in Mem.blank_cards:
-                item.unbind('<Button-1>')
-            if Mem.new_card.cget('text') == Mem.first_card.cget('text'):
-                Mem.match_list.append(Mem.new_card.cget('text'))
-                Mem.found_matches += 1
-                Mem.total_ai_tries += 1
-                Mem.click_ai_count = 0
-                for item in Mem.blank_cards:
-                    if item.cget('text') not in Mem.match_list:
-                        updt_status_bar('Clicks:' + str(Mem.all_clicks) + '-' + str(Mem.target_clicks))
-                        item.bind('<Button-1>', on_click)
-                if Mem.found_matches == Mem.num_pairs:
-                    we_have_a_winner("AI",Mem.total_ai_tries)
-                    updt_status_bar('Clicks:' + str(Mem.all_clicks) + '-' + str(Mem.target_clicks))
-            else:
-                ai_remember_card(Mem.first_card)
-                ai_remember_card(Mem.new_card)
-                Mem.new_card.after(1000, check_match)
-        
-            
+    """Mem.click_count += 1
+    Mem.all_clicks += 1"""
     
+    Mem.total_player_clicks+=1
+
+    Mem.new_card = event.widget
+    img = tk.PhotoImage(file=Mem.new_card.cget('text'))
+    Mem.new_card.img = img
+    Mem.new_card.config(image=img)
+
+    if Mem.click_count == 1:
+        Mem.first_card = Mem.new_card
+        Mem.first_card.unbind('<Button-1>')
+        updt_status_bar('Clicks:' + str(Mem.all_clicks) + '-' + str(Mem.target_clicks))
+    else:
+        for item in Mem.blank_cards:
+            item.unbind('<Button-1>')
+        if Mem.new_card.cget('text') == Mem.first_card.cget('text'):
+            Mem.match_list.append(Mem.new_card.cget('text'))
+            Mem.found_matches += 1
+            Mem.total_tries += 1
+            Mem.click_count = 0
+            for item in Mem.blank_cards:
+                if item.cget('text') not in Mem.match_list:
+                    updt_status_bar('Clicks:' + str(Mem.all_clicks) + '-' + str(Mem.target_clicks))
+                    item.bind('<Button-1>', on_click)
+            if Mem.found_matches == Mem.num_pairs:
+                we_have_a_winner()
+                updt_status_bar('Clicks:' + str(Mem.all_clicks) + '-' + str(Mem.target_clicks))
+        else:
+            ai_remember_card(Mem.first_card)
+            ai_remember_card(Mem.new_card)
+            Mem.new_card.after(1000, check_match)
         
 
 def on_button_click():
@@ -630,36 +541,40 @@ def ai_remember_card(card):
         self.widget = widget"""
 
 def ai_turn():
-    """AI makes a move based on its memory or randomly selects two cards."""
+    """AI makes a move based on its memory."""
     available_cards = [card for card in Mem.blank_cards if card.cget('text') not in Mem.match_list]
     
-    # Try to find known pairs in memory
-    known_pairs = [card for card, count in Counter([card.cget('text') for card in available_cards]).items() if count == 2]
     
+    known_pairs = [card for card, count in Counter([card.cget('text') for card in available_cards]).items() if count == 2]
     if known_pairs and known_pairs[0] in Mem.ai_memory:
         card1 = Mem.ai_memory[known_pairs[0]]
         card2 = next(card for card in available_cards if card.cget('text') == known_pairs[0] and card != card1)
     else:
-        # Randomly select two cards if no known pairs found
         card1, card2 = random.sample(available_cards, 2)
     
-    # Simulate AI flipping the cards
-    flip_card(card1)
-    flip_card(card2)
 
-def flip_card(card):
-    """Simulates flipping a card and checking for matches."""
-    # Simulate flipping the card
-    img = tk.PhotoImage(file=card.cget('text'))
-    card.img = img
-    card.config(image=img)
+    """if known_pairs:
+        card1 = Mem.ai_memory[known_pairs[0]]
+        card2 = next(card for card in available_cards if card.cget('text') == known_pairs[0] and card != card1)"""
+    
 
-    # Check for matches after a short delay
-    root.after(1000, check_match)
+    Mem.click_count += 1
+    Mem.all_clicks += 1
+    
+    
+    
+    card1=event.widget
 
-        
+    """card1_event = Event(card1)
+    card1_event.widget = card1"""
+    #on_click(card1_event)
+    on_click(card1)
 
-
+    """card2_event = Event(card2)
+    card2_event.widget = card2
+    on_click(card2_event)"""
+    card2=event.widget
+    on_click(card2)
         
         
 def exit_app():

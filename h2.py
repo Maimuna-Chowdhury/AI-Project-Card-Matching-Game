@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Jun 15 22:37:23 2024
+
+@author: Hp
+"""
+
 # black jack in python wth pygame!
 import copy
 import random
@@ -6,8 +13,8 @@ import os
 import tkinter as tk
 from tkinter import messagebox
 from PIL import Image, ImageTk
-# from django.shortcuts import redirect
 from button import Button
+from collections import Counter
 
 
 pygame.init()
@@ -34,21 +41,20 @@ values= {
 
 one_deck = 4 * cards
 decks = 4
-WIDTH = 1400
+WIDTH = 1500
 HEIGHT = 900
 screen = pygame.display.set_mode([WIDTH, HEIGHT],pygame.FULLSCREEN)
-bg_img = pygame.image.load('bb.jpg')
+bg_img = pygame.image.load('bg.jpg')
 bg_img = pygame.transform.scale(bg_img,(WIDTH,HEIGHT))
-screen = pygame.display.set_mode([WIDTH, HEIGHT],pygame.FULLSCREEN)
-bg_img2 = pygame.image.load('bdb.png')
+bg_img2 = pygame.image.load('front.jpg')
 bg_img2 = pygame.transform.scale(bg_img2,(WIDTH,HEIGHT))
 bg_img1= pygame.image.load('bg.jpg')
 bg_img1= pygame.transform.scale(bg_img1,(WIDTH,HEIGHT-100))
 
 runing = True
-i=0
 
-pygame.display.set_caption('Pygame Blackjack!')
+
+pygame.display.set_caption('Blackjack!')
 fps = 60
 timer = pygame.time.Clock()
 font = pygame.font.Font('freesansbold.ttf', 25)
@@ -177,20 +183,18 @@ def draw_game(act, record=[0,0,0,0], result=[0,0,0],s_board=[0,0,0]):
     # initially on startup (not active) only option is to deal new hand
     if act == 0:
         screen.blit(bg_img,(0,0))
-
-        #screen.fill('Black')
         deal1 = pygame.draw.rect(screen, 'white', [900, 50, 300, 80], 0, 2)
-        pygame.draw.rect(screen, 'purple', [900, 50, 300, 80], 3, 5)
+        pygame.draw.rect(screen, 'black', [900, 50, 300, 80], 3, 5)
         deal_text = font.render('Black Jack', True, 'black')
         screen.blit(deal_text, (970, 80))
         button_list.append(deal1)
         deal2 = pygame.draw.rect(screen, 'white', [900, 250, 300, 80], 0, 2)
-        pygame.draw.rect(screen, 'purple', [900, 250, 300, 80], 3, 5)
+        pygame.draw.rect(screen, 'black', [900, 250, 300, 80], 3, 5)
         deal_text = font.render('Black Jack 2.0', True, 'black')
         screen.blit(deal_text, (970, 280))
         button_list.append(deal2)
         deal3 = pygame.draw.rect(screen, 'white', [900, 450, 300, 80], 0, 2)
-        pygame.draw.rect(screen, 'purple', [900, 450, 300, 80], 3, 5)
+        pygame.draw.rect(screen, 'black', [900, 450, 300, 80], 3, 5)
         deal_text = font.render('Wanna Back?', True, 'black')
         screen.blit(deal_text, (970, 480))
         button_list.append(deal3)
@@ -198,8 +202,6 @@ def draw_game(act, record=[0,0,0,0], result=[0,0,0],s_board=[0,0,0]):
         
     
     elif act == 2:
-            
-            #screen.fill('3F1651')
             screen.blit(bg_img2,(0,0))
             MENU_MOUSE_POS = pygame.mouse.get_pos()
 
@@ -207,7 +209,7 @@ def draw_game(act, record=[0,0,0,0], result=[0,0,0],s_board=[0,0,0]):
             MENU_RECT = MENU_TEXT.get_rect(center=(700, 200))
 
 
-            color = "#03fce3"
+            color = "#000000"
 
             PLAY_BUTTON = Button(image=pygame.image.load("Play Rect.png"), pos=(700, 350), 
                                 text_input="PLAY", font=get_font(55), base_color=color, hovering_color="White")
@@ -219,25 +221,25 @@ def draw_game(act, record=[0,0,0,0], result=[0,0,0],s_board=[0,0,0]):
             screen.blit(MENU_TEXT, MENU_RECT)
 
             for button in [PLAY_BUTTON, QUIT_BUTTON]:
-                button.changeColor(MENU_MOUSE_POS)
+                button.change(MENU_MOUSE_POS)
                 button.update(screen)
             return PLAY_BUTTON,QUIT_BUTTON,MENU_MOUSE_POS
     elif act == 1:
-        #screen.fill('#660099')
+       
         hit = pygame.draw.rect(screen, 'white', [0, 550, 300, 50], 0, 5)
-        pygame.draw.rect(screen, 'purple', [0, 550, 300, 50], 3, 5)
+        pygame.draw.rect(screen, 'black', [0, 550, 300, 50], 3, 5)
         hit_text = font.render('HIT ME', True, 'black')
         screen.blit(hit_text, (105, 565))
         button_list.append(hit)
         
         stand = pygame.draw.rect(screen, 'white', [300, 550, 300, 50], 0, 5)
-        pygame.draw.rect(screen, 'purple', [300, 550, 300,50], 3, 5)
+        pygame.draw.rect(screen, 'black', [300, 550, 300,50], 3, 5)
         stand_text = font.render('STAND', True, 'black')
         screen.blit(stand_text, (405, 565))
         button_list.append(stand)
         
         quite = pygame.draw.rect(screen, 'white', [600, 550, 300, 50], 0, 5)
-        pygame.draw.rect(screen, 'purple', [600, 550, 300,50], 3, 5)
+        pygame.draw.rect(screen, 'black', [600, 550, 300,50], 3, 5)
         stand_text = font.render('QUIT', True, 'black')
         screen.blit(stand_text, (705, 565))
         button_list.append(quite)
@@ -317,16 +319,19 @@ def check_endgame(AI_S,hand_act, deal_score, play_score, result, totals, add,sc_
 
 
 
+
 #BlackJack2.0 starting
 
-class Mem():
-   
+class Mem:
+    player_turn=True
     logo_frame = None
-    new_card = ''
-    first_card = ''
-    click_count = 0
+    new_card = None
+    first_card = None
+    click_player_count = 0
+    click_ai_count=0
     found_matches = 0
-    total_tries = 0
+    total_player_tries = 0
+    total_ai_tries=0
     match_list = []
     blank_cards = []
     card_images = []
@@ -336,53 +341,37 @@ class Mem():
     card = None
     num_pairs = 8  
     level = 1  
-
-
+    ai_memory = {}  # Dictionary to store the positions and images of the cards the AI has seen
 
 def updt_status_bar(txt):
     Mem.stat_bar.config(text=txt)
     Mem.stat_bar.update()
 
-
 def logo():
-  
     Mem.logo_frame = tk.Frame(root)
     Mem.logo_frame.grid(row=0, columnspan=10)
     logo_image = Image.open('bb.jpg')
-    # Increase the size of the image
-    new_size = (1500, 300)  # Set the desired size
+    new_size = (800, 300)
     logo_image = logo_image.resize(new_size, Image.ANTIALIAS)
-  
     logo_photo = ImageTk.PhotoImage(logo_image)
     logo_label = tk.Label(Mem.logo_frame, image=logo_photo)
     logo_label.logo_image = logo_photo
     logo_label.grid(padx=0, pady=0, row=0, column=0)
 
-
 def complete_game_as_winner():
-    messagebox.showinfo('Winner',
-                        'Well done you have completed the game!\n\n'
-                        'Now do it again in even less clicks!')
+    messagebox.showinfo('Winner', 'Well done you have completed the game!\n\nNow do it again in even less clicks!')
     root.destroy()
 
-
-
-
 def level_up():
-
     if Mem.level == 1 and Mem.all_clicks < 31:
-        messagebox.showinfo('Congratulations:',
-                            'Well done, level 1 completed\n\n'
-                            'Click OK to play level 2.')
+        messagebox.showinfo('Congratulations:', 'Well done, level 1 completed\n\nClick OK to play level 2.')
         Mem.level = 2
         Mem.num_pairs = 12
         Mem.target_clicks = 60
         return
 
     if Mem.level == 2 and Mem.all_clicks < 61:
-        messagebox.showinfo('Congratulations:',
-                            'Well done, level 2 completed\n\n'
-                            'Click OK to play level 3.')
+        messagebox.showinfo('Congratulations:', 'Well done, level 2 completed\n\nClick OK to play level 3.')
         Mem.level = 3
         Mem.num_pairs = 16
         Mem.target_clicks = 90
@@ -392,125 +381,158 @@ def level_up():
         complete_game_as_winner()
         return
 
-    # Repeat level.
-    messagebox.showinfo('Good try:',
-                        'Well done, but to progress\n'
-                        'you must complete this level\n'
-                        'in less clicks next time.\n\n'
-                        'Click OK to try again.')
+    messagebox.showinfo('Good try:', 'Well done, but to progress\nyou must complete this level\nin less clicks next time.\n\nClick OK to try again.')
 
-
-def we_have_a_winner():
-    updt_status_bar('Completed puzzle in: '
-                    + str(Mem.all_clicks) + ' clicks')
-
-    Mem.new_card = ''
-    Mem.first_card = ''
-    Mem.click_count = 0
+def we_have_a_winner(agent,clicks):
+    
+    updt_status_bar(str(agent)+' Completed puzzle in: ' + str(clicks) + ' clicks')
+    Mem.new_card = None
+    Mem.first_card = None
+    Mem.click_player_count = 0
+    Mem.click_ai_count=0
     Mem.found_matches = 0
-    Mem.total_tries = 0
+    Mem.total_player_tries = 0
+    Mem.total_ai_tries=0
     Mem.match_list = []
     Mem.blank_cards = []
     Mem.card_images = []
     Mem.stat_bar = None
     Mem.card = None
+    Mem.ai_memory = {}
 
-    level_up()  # Do we up a level or not?
+    level_up()
 
-    # Start game.
-    Mem.all_clicks = 0
+    
     create_status_bar()
     create_game_board()
 
-
 def level_msg():
     if Mem.level == 1:
-        updt_status_bar('Complete this level within 30 clicks'
-                        ' to advance to level 2.')
+        updt_status_bar('Complete this level within 30 clicks to advance to level 2.')
         root.title('Black_Jack2.0     Level 1')
     if Mem.level == 2:
-        updt_status_bar('Complete this level within 60 clicks'
-                        ' to advance to level 3.')
+        updt_status_bar('Complete this level within 60 clicks to advance to level 3.')
         root.title('Black_Jack2.0    Level 2')
-
     if Mem.level == 3:
-        updt_status_bar('Complete this level within 90 clicks'
-                        ' to complete game.')
+        updt_status_bar('Complete this level within 90 clicks to complete game.')
         root.title('Black_Jack2.0     Level 3')
 
-
 def get_png_list(loc):
-    """Get all images in 'png' dir."""
     pngs = [f for f in os.listdir(loc) if f[-4:] == '.png']
     return [os.path.join(loc, f) for f in pngs]
 
-
 def check_match():
-    Mem.total_tries += 1
-    Mem.new_card.img = Mem.card
-    Mem.new_card.config(image=Mem.new_card.img)
-    Mem.first_card.img = Mem.card
-    Mem.first_card.config(image=Mem.first_card.img)
+    if Mem.player_turn==True:
+        Mem.total_player_tries += 1
+        Mem.new_card.img = Mem.card
+        Mem.new_card.config(image=Mem.new_card.img)
+        Mem.first_card.img = Mem.card
+        Mem.first_card.config(image=Mem.first_card.img)
 
-    for item in Mem.blank_cards:
-        if item.cget('text') not in Mem.match_list:
-            item.bind('<Button-1>', on_click)
+        for item in Mem.blank_cards:
+            if item.cget('text') not in Mem.match_list:
+                item.bind('<Button-1>', on_click)
 
-    Mem.click_count = 0
-
+        Mem.click_player_count = 0
+        Mem.player_turn=False
+        print("AI turn")
+        ai_turn()
+    else:
+        Mem.total_ai_tries+=1
+        Mem.new_card.img = Mem.card
+        Mem.new_card.config(image=Mem.new_card.img)
+        Mem.first_card.img = Mem.card
+        Mem.first_card.config(image=Mem.first_card.img)
+        
+        for item in Mem.blank_cards:
+            if item.cget('text') not in Mem.match_list:
+                item.bind('<Button-1>', on_click)
+        Mem.click_ai_count=0
+        print("Player Turn")
+        Mem.player_turn=True
+        
+        
+  
 
 def on_click(event):
-    Mem.click_count += 1
-    Mem.all_clicks += 1
+    if Mem.player_turn==True:
+        
+        
+        Mem.total_player_tries+=1
+        Mem.click_player_count+=1
+        Mem.all_clicks+=1
 
-    Mem.new_card = event.widget
-    img = tk.PhotoImage(file=Mem.new_card.cget('text'))
-    Mem.new_card.img = img
-    Mem.new_card.config(image=img)
+        Mem.new_card = event.widget
+        img = tk.PhotoImage(file=Mem.new_card.cget('text'))
+        Mem.new_card.img = img
+        Mem.new_card.config(image=img)
 
-    if Mem.click_count == 1:
-        Mem.first_card = Mem.new_card  # Put in holding space if 1st click.
-        Mem.first_card.unbind('<Button-1>')
-        updt_status_bar('Clicks:' + str(Mem.all_clicks) +
-                        '-' + str(Mem.target_clicks))
-
-    else:
-        for item in Mem.blank_cards:
-            item.unbind('<Button-1>')
-        # FOUND MATCH: Unbind click events. Update match tracker.
-        if Mem.new_card.cget('text') == Mem.first_card.cget('text'):
-            Mem.match_list.append(Mem.new_card.cget('text'))
-            Mem.found_matches += 1
-            # print(Mem.found_matches)
-            Mem.total_tries += 1
-            Mem.click_count = 0
-            for item in Mem.blank_cards:
-                if item.cget('text') not in Mem.match_list:
-                    updt_status_bar('Clicks:' + str(Mem.all_clicks) +
-                                    '-' + str(Mem.target_clicks))
-                    item.bind('<Button-1>', on_click)
-            if Mem.found_matches == Mem.num_pairs:
-                we_have_a_winner()
-                updt_status_bar('Clicks:' + str(Mem.all_clicks) +
-                                '-' + str(Mem.target_clicks))
-
-                # print('Total Tries = ' + str(Mem.total_tries))
-
+        if Mem.click_player_count == 1:
+            Mem.first_card = Mem.new_card
+            Mem.first_card.unbind('<Button-1>')
+            updt_status_bar('Clicks:' + str(Mem.all_clicks) + '-' + str(Mem.target_clicks))
         else:
             for item in Mem.blank_cards:
                 item.unbind('<Button-1>')
-                updt_status_bar('Clicks:' + str(Mem.all_clicks) +
-                                '-' + str(Mem.target_clicks))
+            if Mem.new_card.cget('text') == Mem.first_card.cget('text'):
+                Mem.match_list.append(Mem.new_card.cget('text'))
+                Mem.found_matches += 1
+                Mem.total_player_tries += 1
+                Mem.click_player_count = 0
+                for item in Mem.blank_cards:
+                    if item.cget('text') not in Mem.match_list:
+                        updt_status_bar('Clicks:' + str(Mem.all_clicks) + '-' + str(Mem.target_clicks))
+                        item.bind('<Button-1>', on_click)
+                if Mem.found_matches == Mem.num_pairs:
+                    we_have_a_winner("Player",Mem.total_player_tries)
+                    updt_status_bar('Clicks:' + str(Mem.all_clicks) + '-' + str(Mem.target_clicks))
+            else:
+                ai_remember_card(Mem.first_card)
+                ai_remember_card(Mem.new_card)
+                Mem.new_card.after(1000, check_match)
+    else:
+        Mem.total_ai_tries+=1
+        Mem.click_ai_count+=1
+        Mem.all_clicks+=1
 
-            Mem.new_card.after(1000, check_match)
+        Mem.new_card = event.widget
+        img = tk.PhotoImage(file=Mem.new_card.cget('text'))
+        Mem.new_card.img = img
+        Mem.new_card.config(image=img)
 
+        if Mem.click_ai_count == 1:
+            Mem.first_card = Mem.new_card
+            Mem.first_card.unbind('<Button-1>')
+            updt_status_bar('Clicks:' + str(Mem.all_clicks) + '-' + str(Mem.target_clicks))
+        else:
+            for item in Mem.blank_cards:
+                item.unbind('<Button-1>')
+            if Mem.new_card.cget('text') == Mem.first_card.cget('text'):
+                Mem.match_list.append(Mem.new_card.cget('text'))
+                Mem.found_matches += 1
+                Mem.total_ai_tries += 1
+                Mem.click_ai_count = 0
+                for item in Mem.blank_cards:
+                    if item.cget('text') not in Mem.match_list:
+                        updt_status_bar('Clicks:' + str(Mem.all_clicks) + '-' + str(Mem.target_clicks))
+                        item.bind('<Button-1>', on_click)
+                if Mem.found_matches == Mem.num_pairs:
+                    we_have_a_winner("AI",Mem.total_ai_tries)
+                    updt_status_bar('Clicks:' + str(Mem.all_clicks) + '-' + str(Mem.target_clicks))
+            else:
+                ai_remember_card(Mem.first_card)
+                ai_remember_card(Mem.new_card)
+                Mem.new_card.after(1000, check_match)
+        
+            
+    
+        
 
 def on_button_click():
-    #root.destroy()
     global active
     active = 2
     root.destroy()
-     
+
 def create_game_board():
     
     button = tk.Button(root, text="QUIT", command=on_button_click,font=("Arial", 10), fg="white")
@@ -558,86 +580,113 @@ def create_game_board():
             
     # Adjust the weights and minimum sizes of the rows and columns
     for row in range(ro):
-        game_board_frame.grid_rowconfigure(row, weight=1, minsize=210)  # Increase the minimum size of each row
+        game_board_frame.grid_rowconfigure(row, weight=1, minsize=150)  # Increase the minimum size of each row
         
     for col in range(8):
-        game_board_frame.grid_columnconfigure(col, weight=1, minsize=170)  # Increase the minimum size of each column
+        game_board_frame.grid_columnconfigure(col, weight=1, minsize=150)  # Increase the minimum size of each column
+    level_msg()
 
 
 def create_status_bar():
     stat_frame = tk.Frame(root)
-    stat_frame.grid(padx=0, pady=8,
-                    row=4, columnspan=8,
-                    sticky=tk.W + tk.E)
+    stat_frame.grid(padx=0, pady=8, row=4, columnspan=8, sticky=tk.W + tk.E)
 
-    Mem.stat_bar = tk.Label(stat_frame,
-                            bg='#CBC3E3',
-                            fg='black',
-                            font=('ariel, 16'),
-                            text='',
-                            bd=1,
-                            relief=tk.SUNKEN,
-                            anchor=tk.W)
+    Mem.stat_bar = tk.Label(stat_frame, bg='#CBC3E3', fg='black', font=('ariel, 16'), text='', bd=1, relief=tk.SUNKEN, anchor=tk.W)
     Mem.stat_bar.pack(side=tk.BOTTOM, fill=tk.X)
 
+def ai_remember_card(card):
+    """Store the card position and image in AI memory."""
+    Mem.ai_memory[card.cget('text')] = card
+"""class Event:
+    Custom Event class to simulate click events.
+    def __init__(self, widget):
+        self.widget = widget"""
+
+def ai_turn():
+    """AI makes a move based on its memory or randomly selects two cards."""
+    available_cards = [card for card in Mem.blank_cards if card.cget('text') not in Mem.match_list]
+    
+    # Try to find known pairs in memory
+    known_pairs = [card for card, count in Counter([card.cget('text') for card in available_cards]).items() if count == 2]
+    
+    if known_pairs and known_pairs[0] in Mem.ai_memory:
+        card1 = Mem.ai_memory[known_pairs[0]]
+        card2 = next(card for card in available_cards if card.cget('text') == known_pairs[0] and card != card1)
+    else:
+        # Randomly select two cards if no known pairs found
+        card1, card2 = random.sample(available_cards, 2)
+    
+    # Simulate AI flipping the cards
+    flip_card(card1)
+    flip_card(card2)
+
+def flip_card(card):
+    """Simulates flipping a card and checking for matches."""
+    # Simulate flipping the card
+    img = tk.PhotoImage(file=card.cget('text'))
+    card.img = img
+    card.config(image=img)
+
+    global Mem
+    # Check for matches after a short delay
+    root.after(1000, check_match)
+        
 
 
-
+        
+        
 def exit_app():
     ask_yn = messagebox.askyesno('Question', 'Confirm Quit?')
     if not ask_yn:
         return
     root.destroy()
-    
+
+
 # main game loop
 run = True
 while run:
-    
-   
     # run game at our framerate and fill screen with bg color
     timer.tick(fps)
-    screen.fill('#301934')
+    screen.fill('#000000')
+
     # initial deal to player and dealer
     if initial_deal:
         for i in range(2):
             my_hand, game_deck = deal_cards(my_hand, game_deck)
             dealer_hand, game_deck = deal_cards(dealer_hand, game_deck)
             AI_hand, game_deck = deal_cards(AI_hand, game_deck)
-            
         initial_deal = False
+
     # once game is activated, and dealt, calculate scores and display cards
     if active == 1:
         player_score = calculate_score(my_hand)
         AI_score = calculate_score(AI_hand)
-        draw_cards(my_hand, dealer_hand, reveal_dealer,AI_hand)
-        
-        
+        draw_cards(my_hand, dealer_hand, reveal_dealer, AI_hand)
+
         if reveal_dealer:
             dealer_score = calculate_score(dealer_hand)
-            #AI_score = calculate_score(AI_hand)
-            #print(AI_score)
             if dealer_score < 17:
                 dealer_hand, game_deck = deal_cards(dealer_hand, game_deck)
-        draw_scores(player_score, dealer_score,AI_score)
-    if(active != 2):    
+        draw_scores(player_score, dealer_score, AI_score)
+
+    if active != 2:
         buttons = draw_game(active, records, outcome, score_board)
     else:
-        PLAY_BUTTON,QUIT_BUTTON,MENU_MOUSE_POS = draw_game(active, records, outcome, score_board)
+        PLAY_BUTTON, QUIT_BUTTON, MENU_MOUSE_POS = draw_game(active, records, outcome, score_board)
 
     # event handling, if quit pressed, then exit game
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            run = False 
+            run = False
         if event.type == pygame.MOUSEBUTTONUP:
             if active == 2:
-               
                 for button in [PLAY_BUTTON, QUIT_BUTTON]:
-                     button.changeColor(MENU_MOUSE_POS)
-                     button.update(screen)
+                    button.change(MENU_MOUSE_POS)
+                    button.update(screen)
                 if PLAY_BUTTON.checkForInput(MENU_MOUSE_POS):
-                     active = 0
+                    active = 0
                 if QUIT_BUTTON.checkForInput(MENU_MOUSE_POS):
-                     pygame.quit()
+                    pygame.quit()
                 pygame.display.update()
             elif active == 0:
                 if buttons[0].collidepoint(event.pos):
@@ -666,39 +715,26 @@ while run:
                     root.protocol('WM_DELETE_WINDOW', exit_app)
                     root.mainloop()
                     pygame.display.update()
-                    #pygame.quit()
-            
-
-                
-
             else:
-                # if player can hit, allow them to draw a card
                 if buttons[0].collidepoint(event.pos) and player_score < 21 and hand_active:
-                    
-                    print("hit")
-                    my_hand, game_deck = deal_cards(my_hand, game_deck)  
+                    my_hand, game_deck = deal_cards(my_hand, game_deck)
                     AI_hand, game_deck = AI_cards(AI_hand, game_deck)
-                    print(AI_hand)
-                    
-                # allow player to end turn (stand)
                 elif buttons[1].collidepoint(event.pos) and not reveal_dealer:
                     reveal_dealer = True
                     hand_active = False
-                    
                 elif buttons[2].collidepoint(event.pos):
                     screen.fill('Black')
                     active = 2
-                   
                 elif len(buttons) == 4:
                     if buttons[3].collidepoint(event.pos):
                         active = 1
                         initial_deal = True
                         game_deck = copy.deepcopy(decks * one_deck)
                         my_hand = []
-                        AI_hand =[]
+                        AI_hand = []
                         dealer_hand = []
                         outcome = 0
-                        score_board = [0,0,0]
+                        score_board = [0, 0, 0]
                         hand_active = True
                         reveal_dealer = False
                         outcome = 0
@@ -706,18 +742,14 @@ while run:
                         dealer_score = 0
                         player_score = 0
 
-
-    # if player busts, automatically end turn - treat like a stand
     if hand_active and player_score >= 21:
         hand_active = False
         reveal_dealer = True
 
-    outcome, records, add_score, score_board = check_endgame(AI_score,hand_active, dealer_score,player_score, outcome, records, add_score,score_board)
+    outcome, records, add_score, score_board = check_endgame(AI_score, hand_active, dealer_score, player_score, outcome, records, add_score, score_board)
 
     pygame.display.flip()
+
 pygame.quit()
-
-
-
 
 
