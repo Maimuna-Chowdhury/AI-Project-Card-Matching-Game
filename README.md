@@ -14,4 +14,8 @@ These AI approaches ensure that the game becomes **progressively challenging** a
 ![Screenshot 2025-02-24 112719](https://github.com/user-attachments/assets/74d3c0f1-4893-486f-9306-3d0013607fa4)
 
 
+<meta property="og:title" content="AI Project - Card Matching Game" />
+<meta property="og:description" content="A Python-based AI card matching game using Genetic Algorithm and Heuristic Search." />
+<meta property="og:url" content="https://github.com/YOUR_GITHUB_USERNAME/AI_Project_Card_Matching_Game" />
+<meta property="og:image" content="https://github.com/YOUR_GITHUB_USERNAME/AI_Project_Card_Matching_Game/blob/main/screenshot.png" />
 
